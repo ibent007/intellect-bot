@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.deploy/
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+TestResults/
+artifacts/
+*.log
+*.dump
+*.sql
+.DS_Store
+**/.DS_Store

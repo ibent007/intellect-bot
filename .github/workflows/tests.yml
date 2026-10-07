@@ -1,0 +1,46 @@
+name: CSharp checks
+on: [push, pull_request]
+jobs:
+  unit:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore --locked-mode
+      - run: dotnet build -c Release --no-restore
+      - run: dotnet format whitespace . --folder --verify-no-changes
+      - run: dotnet test -c Release --no-build --filter "Category!=Integration"
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_DB: bot_test
+          POSTGRES_USER: bot_test
+          POSTGRES_PASSWORD: ci-test-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U bot_test -d bot_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      RUN_LAB1_DB_TESTS: '1'
+      TEST_DATABASE_URL: 'Host=127.0.0.1;Port=5432;Database=bot_test;Username=bot_test;Password=ci-test-password'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore --locked-mode
+      - run: dotnet test -c Release --filter "Category=Integration"
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t intellect-bot-ci .
+      - run: docker run --rm intellect-bot-ci --help

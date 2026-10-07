@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bot}
+      POSTGRES_USER: ${POSTGRES_USER:-bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  bot:
+    profiles: ["cloud"]
+    build: .
+    restart: unless-stopped
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN:?Задайте BOT_TOKEN}
+      TELEGRAM_PROXY_URL: ${TELEGRAM_PROXY_URL:-}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-bot}
+      POSTGRES_USER: ${POSTGRES_USER:-bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      HEALTH_PORT: ${HEALTH_PORT:-8080}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_REASONING_EFFORT: ${LLM_REASONING_EFFORT:-low}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-60}
+      LLM_MAX_COMPLETION_TOKENS: ${LLM_MAX_COMPLETION_TOKENS:-4096}
+      LLM_HISTORY_MAX_MESSAGES: ${LLM_HISTORY_MAX_MESSAGES:-12}
+      LLM_CONTEXT_MAX_CHARS: ${LLM_CONTEXT_MAX_CHARS:-6000}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "dotnet", "IntellectBot.dll", "healthcheck"]
+      interval: 10s
+      timeout: 20s
+      retries: 6
+      start_period: 45s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:

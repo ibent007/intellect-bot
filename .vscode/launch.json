@@ -1,0 +1,6 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "intellect_bot", "type": "coreclr", "request": "launch", "preLaunchTask": "build", "program": "${workspaceFolder}/src/IntellectBot/bin/Debug/net10.0/IntellectBot.dll", "cwd": "${workspaceFolder}", "console": "integratedTerminal" }
+  ]
+}

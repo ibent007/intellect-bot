@@ -1,0 +1,9 @@
+**
+!global.json
+!Directory.Build.props
+!src/
+!src/**
+**/bin/
+**/obj/
+**/.env*
+**/*.user
