@@ -1,0 +1,6 @@
+{
+  "Schedule": {
+    "File": "data/demo-schedule.json",
+    "TimeZone": "Europe/Moscow"
+  }
+}

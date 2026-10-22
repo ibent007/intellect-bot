@@ -1,0 +1,10 @@
+# Запускайте только bot с --no-deps. Существующая БД и её volume не изменяются.
+networks:
+  default:
+    external: true
+    name: ${EXISTING_DOCKER_NETWORK:?Задайте сеть существующей БД}
+
+volumes:
+  postgres_data:
+    external: true
+    name: ${EXISTING_POSTGRES_VOLUME:?Задайте volume существующей БД}

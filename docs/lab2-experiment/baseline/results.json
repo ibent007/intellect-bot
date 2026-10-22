@@ -1,0 +1,161 @@
+{
+  "fingerprint": "EF2CEA4A0E0035E9B34871C0CCC187FE23CC8FAA9AECEA7D5B598E497E355B0C",
+  "complete": true,
+  "routing_accuracy": 1,
+  "argument_accuracy": 0.7777777777777778,
+  "rows": [
+    {
+      "Id": "weather_1",
+      "Query": "Какая сейчас погода в Санкт-Петербурге?",
+      "Expected": "get_weather",
+      "Actual": "get_weather",
+      "Arguments": {
+        "city": "Санкт-Петербург"
+      },
+      "ArgumentsCorrect": true,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "weather_2",
+      "Query": "Нужен ли сегодня зонт в Казани?",
+      "Expected": "get_weather",
+      "Actual": "get_weather",
+      "Arguments": {
+        "city": "Казань"
+      },
+      "ArgumentsCorrect": true,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "weather_3",
+      "Query": "Сколько сейчас градусов в Тбилиси, Грузия?",
+      "Expected": "get_weather",
+      "Actual": "get_weather",
+      "Arguments": {
+        "city": "Тбилиси"
+      },
+      "ArgumentsCorrect": false,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "schedule_1",
+      "Query": "Какие занятия у меня сегодня?",
+      "Expected": "get_schedule",
+      "Actual": "get_schedule",
+      "Arguments": {
+        "date": "2026-10-12"
+      },
+      "ArgumentsCorrect": true,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "schedule_2",
+      "Query": "Покажи расписание на завтра.",
+      "Expected": "get_schedule",
+      "Actual": "get_schedule",
+      "Arguments": {
+        "date": "2026-10-13"
+      },
+      "ArgumentsCorrect": true,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "schedule_3",
+      "Query": "Есть ли у меня пары в ближайшее воскресенье?",
+      "Expected": "get_schedule",
+      "Actual": "get_schedule",
+      "Arguments": {
+        "date": "2026-10-18"
+      },
+      "ArgumentsCorrect": true,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "reminder_1",
+      "Query": "Напомни завтра в 18:30 отправить отчёт.",
+      "Expected": "add_reminder",
+      "Actual": "add_reminder",
+      "Arguments": {
+        "remind_at": "2026-10-13T18:30:00+03:00",
+        "text": "_otправить отчёт"
+      },
+      "ArgumentsCorrect": false,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "reminder_2",
+      "Query": "Напомни 15 октября в 09:00 проверить расписание.",
+      "Expected": "add_reminder",
+      "Actual": "add_reminder",
+      "Arguments": {
+        "remind_at": "2026-10-15T09:00:00+03:00",
+        "text": "проверить расписание"
+      },
+      "ArgumentsCorrect": true,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "reminder_3",
+      "Query": "Через два часа напомни сделать перерыв.",
+      "Expected": "add_reminder",
+      "Actual": "add_reminder",
+      "Arguments": {
+        "remind_at": "2026-10-12T11:00:00+03:00",
+        "text": "сделать перерыв"
+      },
+      "ArgumentsCorrect": true,
+      "RoutingCorrect": true,
+      "Validation": "пройдена",
+      "Response": null
+    },
+    {
+      "Id": "respond_1",
+      "Query": "Кратко объясни разницу между списком и кортежем в Python.",
+      "Expected": "respond",
+      "Actual": "respond",
+      "Arguments": null,
+      "ArgumentsCorrect": null,
+      "RoutingCorrect": true,
+      "Validation": "не требуется",
+      "Response": "**Список (`list`)** — изменяемая последовательность. Можно добавлять, удалять и менять элементы.\n\n**Кортеж (`tuple`)** — неизменяемая последовательность. После создания содержимое менять нельзя.\n\n```python\nlst = [1, 2, 3]\nlst[0] = 99      # ок → [99, 2, 3]\nlst.append(4)    # ок → [99, 2, 3, 4]\n\ntup = (1, 2, 3)\ntup[0] = 99      # TypeError\n```\n\nКогда что выбрать:\n\n- **Кортеж** — для фиксированных наборов данных (координаты, запись БД, ключи словаря). Быстрее, безопаснее, может быть ключом словаря.\n- **Список** — когда коллекция меняется в процессе (сбор результатов, очередь задач)."
+    },
+    {
+      "Id": "respond_2",
+      "Query": "Переведи на английский: лабораторная работа завершена.",
+      "Expected": "respond",
+      "Actual": "respond",
+      "Arguments": null,
+      "ArgumentsCorrect": null,
+      "RoutingCorrect": true,
+      "Validation": "не требуется",
+      "Response": "Русский → Английский\n\n```text\nThe lab work is complete.\n```"
+    },
+    {
+      "Id": "clarify_1",
+      "Query": "Напомни вечером про лабораторную.",
+      "Expected": "clarify",
+      "Actual": "clarify",
+      "Arguments": null,
+      "ArgumentsCorrect": null,
+      "RoutingCorrect": true,
+      "Validation": "не требуется",
+      "Response": "Вечером"
+    }
+  ]
+}

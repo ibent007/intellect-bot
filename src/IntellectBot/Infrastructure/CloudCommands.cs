@@ -9,7 +9,7 @@ using IntellectBot.Configuration;
 
 namespace IntellectBot.Infrastructure;
 
-// Cloud operations are invoked only by explicit `cloud` commands, never on bot startup.
+// Облачные операции выполняются только явными командами cloud, не при запуске бота.
 public sealed class CloudCommands
 {
     private const string Remote = "/home/student/course-bot";
@@ -79,7 +79,7 @@ public sealed class CloudCommands
     {
         var name = $"intellect-{Owner}-{key}";
         Resources[key] ??= new JsonObject { ["name"] = name };
-        Save(); // Record intent before remote creation; recover by name after an ambiguous timeout.
+        Save(); // Сохраняем намерение до создания ресурса; после тайм-аута ищем его по имени.
         var resource = await Lookup(key);
         if (resource is null)
         {
@@ -224,6 +224,9 @@ public sealed class CloudCommands
                 }
             }
             Visit(source);
+            foreach (var relative in new[] { "src/IntellectBot.McpServer/mcp-settings.json", "data/demo-schedule.json" })
+                if (File.Exists(Path.Combine(root, relative)))
+                    paths.Add(relative);
             foreach (var relative in paths.Order(StringComparer.Ordinal))
             {
                 var path = Path.Combine(root, relative);
@@ -274,7 +277,7 @@ public sealed class CloudCommands
             throw new CommandException("Удаление отменено.");
         var found = new Dictionary<string, JsonNode?>();
         foreach (var key in Kinds.Keys)
-            found[key] = await Lookup(key); // Validate ALL ownership before first deletion.
+            found[key] = await Lookup(key); // Проверяем владельца всех ресурсов до первого удаления.
         foreach (var key in Kinds.Keys.Reverse())
         {
             if (found[key] is { } resource && Resources[key]?["managed"]?.GetValue<bool>() != false)
@@ -373,7 +376,7 @@ public sealed class CloudCommands
                     if (vm["status"]?.GetValue<string>() == "RUNNING")
                     {
                         var output = await deployment.Ssh(vm, Compose + (action == "status" ? " ps" : " logs --tail 100 bot db"));
-                        // Only print logs with the matching secret configuration available for masking.
+                        // Печатаем журналы только при наличии конфигурации для маскировки секретов.
                         Console.WriteLine(new SafeLog(AppSettings.Load(".env.cloud")).Redact(output));
                     }
                 }

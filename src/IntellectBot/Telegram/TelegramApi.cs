@@ -6,7 +6,7 @@ using IntellectBot.Configuration;
 
 namespace IntellectBot.Telegram;
 
-// Small typed adapter for the official Bot API; no Telegram SDK version coupling.
+// Типизированный адаптер Bot API: HTTP и сериализация отделены от обработчиков.
 public sealed class TelegramApi(HttpClient client, string token) : ITelegramApi
 {
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
@@ -65,7 +65,11 @@ public sealed class TelegramApi(HttpClient client, string token) : ITelegramApi
             chat_id = chatId,
             text,
             reply_markup = keyboard,
-            parse_mode = parseMode
+            parse_mode = parseMode,
+            link_preview_options = new
+            {
+                is_disabled = true
+            }
         }, ct);
     public async Task EditAsync(long chatId, long messageId, string text, InlineKeyboard keyboard, CancellationToken ct)
     {
@@ -76,7 +80,11 @@ public sealed class TelegramApi(HttpClient client, string token) : ITelegramApi
                 chat_id = chatId,
                 message_id = messageId,
                 text,
-                reply_markup = keyboard
+                reply_markup = keyboard,
+                link_preview_options = new
+                {
+                    is_disabled = true
+                }
             }, ct);
         }
         catch (TelegramException error) when (error.NotModified) { }

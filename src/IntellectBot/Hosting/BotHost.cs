@@ -1,4 +1,6 @@
 using IntellectBot.Configuration;
+using IntellectBot.Agent;
+using IntellectBot.Mcp;
 using IntellectBot.Data;
 using IntellectBot.Domain;
 using IntellectBot.Infrastructure;
@@ -14,17 +16,17 @@ public static class BotHost
     {
         var log = new SafeLog(settings);
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = [] });
-        // Default HttpClient / hosting diagnostics could contain URLs with credentials.
+        // Стандартные HTTP-журналы могут содержать URL с секретами.
         builder.Logging.ClearProviders();
         builder.WebHost.UseUrls($"http://127.0.0.1:{settings.HealthPort}");
         builder.Services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(15));
         await using var dataSource = NpgsqlDataSource.Create(settings.ConnectionString);
-        var store = new PostgresStore(dataSource);
+        var database = new DatabaseProbe(dataSource);
         using var telegramHttp = TelegramApi.CreateHttpClient(settings);
         using var llmHttp = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan };
         var api = new TelegramApi(telegramHttp, settings.BotToken);
-        var dialogue = new DialogueService(store, new LlmClient(llmHttp, settings.Llm, log), settings.Llm);
-        var handler = new UpdateHandler(api, dialogue, log);
+        BotMcpClient? mcp = null;
+        var handler = BotComposition.CreateHandler(settings, dataSource, api, llmHttp, log, () => mcp);
         var state = new RuntimeState();
         builder.Services.AddSingleton(api);
         builder.Services.AddSingleton(handler);
@@ -34,7 +36,7 @@ public static class BotHost
         await using var app = builder.Build();
         app.MapGet("/health", async (HttpContext context) =>
         {
-            var result = await HealthProbe.CheckAsync(state, store.PingAsync, context.RequestAborted);
+            var result = await HealthProbe.CheckAsync(state, database.PingAsync, context.RequestAborted);
             return Results.Json(new
             {
                 status = result.Status,
@@ -46,11 +48,25 @@ public static class BotHost
         {
             using var startup = CancellationTokenSource.CreateLinkedTokenSource(ct);
             startup.CancelAfter(TimeSpan.FromSeconds(30));
-            if (!await store.PingAsync(startup.Token))
+            if (!await database.PingAsync(startup.Token))
                 throw new IOException();
             log.Write("PostgreSQL подключён: SELECT 1 выполнен.");
-            await store.InitializeAsync(startup.Token);
+            await new DatabaseMigrator(dataSource).ApplyAsync(startup.Token);
             log.Write("Таблицы настроек и истории готовы.");
+            try
+            {
+                using var mcpStartup = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                mcpStartup.CancelAfter(TimeSpan.FromSeconds(15));
+                mcp = await BotMcpClient.ConnectAsync(settings.McpServerPath, settings.ConnectionString,
+                    TimeProvider.System, settings.ScheduleFile, settings.ScheduleTimeZone, mcpStartup.Token);
+                log.Write("MCP подключён: инструменты и ресурс обнаружены.");
+            }
+            catch (Exception error) when (!ct.IsCancellationRequested &&
+                error is McpUnavailableException or OperationCanceledException)
+            {
+                log.Write("MCP недоступен: обычный чат продолжает работать.", true);
+            }
+            startup.CancelAfter(TimeSpan.FromSeconds(30));
             var me = await api.GetMeAsync(startup.Token);
             handler.BotUsername = me.Username;
             if (await api.HasWebhookAsync(startup.Token))
@@ -63,7 +79,12 @@ public static class BotHost
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { return 0; }
         catch (ConfigException error) { log.Write(error.Message, true); return 1; }
         catch (Exception error) { log.Failure("Запуск или работа приложения не выполнены. Проверьте конфигурацию и доступность сервисов", error); return 1; }
-        finally { state.Initialized = false; }
+        finally
+        {
+            state.Initialized = false;
+            if (mcp is not null)
+                await mcp.DisposeAsync();
+        }
     }
     public static async Task<int> HealthcheckAsync(CancellationToken ct, string envFile = ".env")
     {

@@ -34,7 +34,10 @@ public static class LocalCommands
         ["LLM_TIMEOUT_SECONDS"] = s.Llm.TimeoutSeconds.ToString(CultureInfo.InvariantCulture),
         ["LLM_MAX_COMPLETION_TOKENS"] = s.Llm.MaxCompletionTokens.ToString(CultureInfo.InvariantCulture),
         ["LLM_HISTORY_MAX_MESSAGES"] = s.Llm.HistoryMaxMessages.ToString(CultureInfo.InvariantCulture),
-        ["LLM_CONTEXT_MAX_CHARS"] = s.Llm.ContextMaxChars.ToString(CultureInfo.InvariantCulture)
+        ["LLM_CONTEXT_MAX_CHARS"] = s.Llm.ContextMaxChars.ToString(CultureInfo.InvariantCulture),
+        ["LLM_TOOL_RESPONSE_MAX_TOKENS"] = s.Llm.ToolResponseMaxTokens.ToString(CultureInfo.InvariantCulture),
+        ["LLM_TOOL_CONTEXT_MAX_CHARS"] = s.Llm.ToolContextMaxChars.ToString(CultureInfo.InvariantCulture),
+        ["LLM_MAX_RATE_WAIT_SECONDS"] = s.Llm.MaxRateWaitSeconds.ToString(CultureInfo.InvariantCulture)
     };
     private static string AskSecret(string prompt)
     {
@@ -85,7 +88,7 @@ public static class LocalCommands
         if (cloud && string.IsNullOrWhiteSpace(effective["TELEGRAM_PROXY_URL"]))
             throw new ConfigException("Для облака необходимо указать внешний прокси Telegram.");
         var settings = AppSettings.FromValues(effective);
-        // Save only configuration keys, never unrelated environment variables.
+        // Сохраняем только ключи конфигурации, без посторонних переменных среды.
         foreach (var (key, value) in Values(settings))
             existing[key] = value;
         DotEnv.PrivateWrite(path, "# Секретные настройки. Не добавляйте в Git.\n" + string.Concat(existing.Select(p => $"{p.Key}={DotEnv.Quote(p.Value)}\n")));
@@ -101,7 +104,7 @@ public static class LocalCommands
         await using var source = NpgsqlDataSource.Create(AppSettings.Load(envFile).ConnectionString);
         try
         {
-            await new PostgresStore(source).PingAsync(ct);
+            await new DatabaseProbe(source).PingAsync(ct);
             Console.WriteLine("PostgreSQL отвечает на SELECT 1.");
             return 0;
         }

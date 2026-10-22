@@ -1,6 +1,6 @@
 namespace IntellectBot.Infrastructure;
 
-// Entries are reference-counted, so long-running bots do not retain every chat forever.
+// Счётчик ссылок освобождает блокировки чатов после обработки.
 public sealed class ChatLocks
 {
     private sealed class Entry

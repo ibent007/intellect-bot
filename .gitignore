@@ -1,16 +1,24 @@
+# Секреты и локальное состояние
 .env
 .env.*
 !.env.example
 .deploy/
+intellect-before-*.sql
+intellect_bot.backup*/
+*.sql.dump
+*.dump
+*.backup
+
+# Результаты сборки и тестов
 **/bin/
 **/obj/
-.vs/
-*.user
-*.suo
 TestResults/
-artifacts/
+*.trx
+*.coverage
 *.log
-*.dump
-*.sql
+
+# Локальные файлы редактора и ОС
+.vs/
+.idea/
 .DS_Store
-**/.DS_Store
+Thumbs.db

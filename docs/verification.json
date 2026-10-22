@@ -1,0 +1,84 @@
+{
+  "checked_at": "2026-10-21",
+  "environment": {
+    "platform": "Linux x64",
+    "sdk": "10.0.401",
+    "build": "Release",
+    "dependency_mode": "Native locked project restore and build",
+    "nuget_restore_completed": true,
+    "nuget_analyzers_executed": true
+  },
+  "tests": {
+    "total": 493,
+    "passed": 451,
+    "failed": 0,
+    "skipped": 42
+  },
+  "checks": {
+    "native_build": "passed",
+    "mcp_separate_process": "passed",
+    "gateway": "passed",
+    "negative": "passed",
+    "public_sources_over_mcp": "passed",
+    "sql_embedded_pglite": "not_repeated_schema_unchanged",
+    "whitespace": "passed",
+    "bash_syntax": "passed"
+  },
+  "external_checks": {
+    "docker": "not_run",
+    "postgresql_npgsql": "not_run",
+    "telegram": "not_run",
+    "llm_current_build": "not_run",
+    "open_meteo": "passed",
+    "wikipedia": "passed"
+  },
+  "source_timings_ms": {
+    "includes_llm": false,
+    "dubai": {
+      "first": 12177,
+      "cached": 4
+    },
+    "saint_petersburg": {
+      "first": 348,
+      "cached": 2
+    },
+    "moscow": {
+      "first": 354,
+      "cached": 1
+    },
+    "samara": {
+      "first": 349,
+      "cached": 5
+    },
+    "michurinsk": {
+      "first": 355,
+      "cached": 2
+    }
+  },
+  "routing": {
+    "measurement_date": "2026-10-22",
+    "scope": "saved routing runs; not an end-to-end or latest-build claim",
+    "saved_experiments": {
+      "model": "qwen/qwen3.8-27b",
+      "baseline": {
+        "routing_accuracy": 1,
+        "argument_accuracy": 0.7777777777777778
+      },
+      "intermediate": {
+        "routing_accuracy": 1,
+        "argument_accuracy": 0.8888888888888888
+      },
+      "revised": {
+        "routing_accuracy": 1,
+        "argument_accuracy": 1
+      }
+    }
+  },
+  "dataset_sha256": "0a9c9f06f85e094ae42aaa3b684ea368b8f051055f5476ed676203e2a1afdc98",
+  "manual_verification": {
+    "reported_at": "2026-10-22",
+    "reported_by": "project_owner",
+    "result": "main functionality confirmed",
+    "postgresql_suite_report_available": false
+  }
+}

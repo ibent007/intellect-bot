@@ -4,9 +4,7 @@ using Npgsql;
 
 namespace IntellectBot.Configuration;
 
-public sealed class ConfigException(string message) : Exception(message);
-
-// Classes intentionally do not synthesize ToString(): configuration contains secrets.
+// Не создаём автоматический ToString(): конфигурация содержит секреты.
 public sealed class AppSettings
 {
     public required string BotToken
@@ -28,6 +26,15 @@ public sealed class AppSettings
     {
         get; init;
     }
+    public string McpServerPath { get; init; } = "src/IntellectBot.McpServer/bin/Release/net10.0/IntellectBot.McpServer.dll";
+    public string? ScheduleFile
+    {
+        get; init;
+    }
+    public string? ScheduleTimeZone
+    {
+        get; init;
+    }
     public string ConnectionString => new NpgsqlConnectionStringBuilder
     {
         Host = PostgresHost,
@@ -39,6 +46,7 @@ public sealed class AppSettings
         CommandTimeout = 15,
         MaxPoolSize = 10,
         IncludeErrorDetail = false,
+        GssEncryptionMode = GssEncryptionMode.Disable,
         ApplicationName = "intellect-bot"
     }.ConnectionString;
 
@@ -60,12 +68,18 @@ public sealed class AppSettings
         var url = Required("LLM_BASE_URL").TrimEnd('/');
         if (url.Any(char.IsWhiteSpace) || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != "https" || uri.UserInfo.Length > 0 || uri.Query.Length > 0 || uri.Fragment.Length > 0 || string.IsNullOrEmpty(uri.Host))
             throw new ConfigException("LLM_BASE_URL: требуется HTTPS-адрес без учётных данных, параметров и фрагмента.");
+        var model = Required("LLM_MODEL");
+        if (!Regex.IsMatch(model, @"^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,199}$"))
+            throw new ConfigException("LLM_MODEL: требуется корректный идентификатор модели без пробелов.");
         var effort = Get("LLM_REASONING_EFFORT", "low");
         if (effort is not ("low" or "medium" or "high"))
             throw new ConfigException("LLM_REASONING_EFFORT: допустимы low, medium, high.");
         return new AppSettings
         {
             BotToken = token,
+            McpServerPath = Get("MCP_SERVER_PATH", "src/IntellectBot.McpServer/bin/Release/net10.0/IntellectBot.McpServer.dll"),
+            ScheduleFile = Get("Schedule__File") is { Length: > 0 } scheduleFile ? scheduleFile : null,
+            ScheduleTimeZone = Get("Schedule__TimeZone") is { Length: > 0 } scheduleZone ? scheduleZone : null,
             PostgresPassword = Get("POSTGRES_PASSWORD") is { Length: > 0 } password ? password : throw new ConfigException("POSTGRES_PASSWORD: пароль базы данных не задан."),
             PostgresHost = Get("POSTGRES_HOST", "127.0.0.1"),
             PostgresPort = Number("POSTGRES_PORT", 5432, 65535),
@@ -78,33 +92,16 @@ public sealed class AppSettings
             {
                 BaseUrl = url,
                 ApiKey = Required("LLM_API_KEY"),
-                Model = Required("LLM_MODEL"),
+                Model = model,
                 ReasoningEffort = effort,
                 TimeoutSeconds = Number("LLM_TIMEOUT_SECONDS", 60),
-                MaxCompletionTokens = Number("LLM_MAX_COMPLETION_TOKENS", 2048),
+                MaxCompletionTokens = Number("LLM_MAX_COMPLETION_TOKENS", 4096),
+                ToolResponseMaxTokens = Number("LLM_TOOL_RESPONSE_MAX_TOKENS", 1024),
+                ToolContextMaxChars = Number("LLM_TOOL_CONTEXT_MAX_CHARS", 12000),
+                MaxRateWaitSeconds = Number("LLM_MAX_RATE_WAIT_SECONDS", 5, 90),
                 HistoryMaxMessages = Number("LLM_HISTORY_MAX_MESSAGES", 12),
                 ContextMaxChars = Number("LLM_CONTEXT_MAX_CHARS", 6000)
             }
         };
     }
-}
-public sealed class LlmSettings
-{
-    public required string BaseUrl
-    {
-        get; init;
-    }
-    public required string ApiKey
-    {
-        get; init;
-    }
-    public required string Model
-    {
-        get; init;
-    }
-    public string ReasoningEffort { get; init; } = "low";
-    public int TimeoutSeconds { get; init; } = 60;
-    public int MaxCompletionTokens { get; init; } = 2048;
-    public int HistoryMaxMessages { get; init; } = 12;
-    public int ContextMaxChars { get; init; } = 6000;
 }

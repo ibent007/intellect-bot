@@ -5,7 +5,7 @@ namespace IntellectBot.Configuration;
 
 public static class DotEnv
 {
-    // No ${...} interpolation. Process environment has priority, including empty values.
+    // Подстановок ${...} нет. Окружение процесса приоритетнее, включая пустые значения.
     public static Dictionary<string, string> Load(string path)
     {
         var values = File.Exists(path) ? Parse(File.ReadAllText(path)) : new Dictionary<string, string>(StringComparer.Ordinal);
@@ -84,7 +84,8 @@ public static class DotEnv
         return result;
     }
     public static string Quote(string value) => "'" + value.Replace("\\", "\\\\").Replace("'", "\\'") + "'";
-    // Docker Compose keeps backslashes literal inside single quotes.
+
+    // Docker Compose сохраняет обратные слеши буквально внутри одинарных кавычек.
     public static string ComposeQuote(string value) => "'" + value.Replace("'", "\\'") + "'";
     public static void PrivateWrite(string path, string value)
     {

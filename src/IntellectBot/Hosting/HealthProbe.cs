@@ -12,7 +12,10 @@ public static class HealthProbe
             timeout.CancelAfter(TimeSpan.FromSeconds(3));
             database = await ping(timeout.Token);
         }
-        catch (Exception) { /* Only public readiness flags, never exception text or credentials. */ }
+        catch (Exception)
+        {
+            // Наружу выдаются только признаки готовности, без исключений и учётных данных.
+        }
         var ready = state.Initialized && state.Polling && database;
         return new(ready ? 200 : 503, ready ? "ok" : "not_ready", database ? "ok" : "unavailable", state.Polling ? "running" : "stopped");
     }

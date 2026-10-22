@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 Push-Location (Join-Path $PSScriptRoot "..")
 $container = "intellect-test-" + [Guid]::NewGuid().ToString("N")
-$oldRun = $env:RUN_LAB1_DB_TESTS
+$oldRun = $env:RUN_DB_TESTS
 $oldUrl = $env:TEST_DATABASE_URL
 try {
     & docker run -d --rm --name $container -e POSTGRES_USER=bot_test -e POSTGRES_PASSWORD=local-test-password -e POSTGRES_DB=bot_test -p 127.0.0.1::5432 postgres:16-bookworm | Out-Null
@@ -16,7 +16,7 @@ try {
     $mapping = & docker port $container 5432/tcp
     if ($LASTEXITCODE -ne 0) { throw "Не удалось узнать порт БД." }
     $port = ($mapping.Trim() -split ':')[-1]
-    $env:RUN_LAB1_DB_TESTS = "1"
+    $env:RUN_DB_TESTS = "1"
     $env:TEST_DATABASE_URL = "Host=127.0.0.1;Port=$port;Database=bot_test;Username=bot_test;Password=local-test-password"
     & dotnet restore --locked-mode
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -24,7 +24,7 @@ try {
     exit $LASTEXITCODE
 } finally {
     & docker rm -f $container 2>$null | Out-Null
-    $env:RUN_LAB1_DB_TESTS = $oldRun
+    $env:RUN_DB_TESTS = $oldRun
     $env:TEST_DATABASE_URL = $oldUrl
     Pop-Location
 }

@@ -54,6 +54,14 @@ public sealed class MemoryStore : IDialogueStore
             Temperature = value
         };
     }
+    public async Task SetModelAsync(long id, string model, CancellationToken ct)
+    {
+        await GetOrCreateAsync(id, ct);
+        Users[id] = Users[id] with
+        {
+            Model = model
+        };
+    }
 }
 public sealed class FakeLlm : ILlmClient
 {
@@ -61,7 +69,7 @@ public sealed class FakeLlm : ILlmClient
     public string Text = "Ответ";
     public Exception? Error;
     public Func<CancellationToken, Task>? BeforeResponse;
-    public async Task<LlmResponse> GenerateAsync(IReadOnlyList<ChatMessage> messages, double temperature, CancellationToken ct)
+    public async Task<LlmResponse> GenerateAsync(IReadOnlyList<ChatMessage> messages, double temperature, CancellationToken ct, string? model = null)
     {
         Calls.Add((messages, temperature));
         if (BeforeResponse is not null)

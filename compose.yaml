@@ -21,10 +21,15 @@ services:
         max-file: "3"
 
   bot:
-    profiles: ["cloud"]
+    container_name: intellect-bot
+    profiles: ["cloud", "local"]
+    image: intellect-bot:local
     build: .
     restart: unless-stopped
     environment:
+      MCP_SERVER_PATH: /app/mcp/IntellectBot.McpServer.dll
+      Schedule__File: /app/mcp/data/demo-schedule.json
+      Schedule__TimeZone: ${Schedule__TimeZone:-Europe/Moscow}
       BOT_TOKEN: ${BOT_TOKEN:?Задайте BOT_TOKEN}
       TELEGRAM_PROXY_URL: ${TELEGRAM_PROXY_URL:-}
       POSTGRES_HOST: db
@@ -40,6 +45,9 @@ services:
       LLM_REASONING_EFFORT: ${LLM_REASONING_EFFORT:-low}
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-60}
       LLM_MAX_COMPLETION_TOKENS: ${LLM_MAX_COMPLETION_TOKENS:-4096}
+      LLM_TOOL_RESPONSE_MAX_TOKENS: ${LLM_TOOL_RESPONSE_MAX_TOKENS:-1024}
+      LLM_TOOL_CONTEXT_MAX_CHARS: ${LLM_TOOL_CONTEXT_MAX_CHARS:-12000}
+      LLM_MAX_RATE_WAIT_SECONDS: ${LLM_MAX_RATE_WAIT_SECONDS:-5}
       LLM_HISTORY_MAX_MESSAGES: ${LLM_HISTORY_MAX_MESSAGES:-12}
       LLM_CONTEXT_MAX_CHARS: ${LLM_CONTEXT_MAX_CHARS:-6000}
     depends_on:

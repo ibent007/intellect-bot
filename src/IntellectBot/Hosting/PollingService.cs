@@ -26,12 +26,12 @@ public sealed class PollingService(TelegramApi api, UpdateHandler handler, Runti
                     delaySeconds = 1;
                     foreach (var update in updates)
                     {
-                        // Invoke in Telegram order; async per-chat gates are acquired before the next update.
+                        // Начинаем обработку в порядке Telegram; блокировка чата берётся до следующего события.
                         pending.Add(handler.HandleAsync(update, stoppingToken));
                         offset = update.UpdateId + 1;
                     }
                     pending.RemoveAll(t => t.IsCompletedSuccessfully);
-                    // Bound outstanding work without losing or reordering updates.
+                    // Ограничиваем незавершённую работу без потери или перестановки событий.
                     if (pending.Count >= 100)
                     {
                         await Task.WhenAll(pending);

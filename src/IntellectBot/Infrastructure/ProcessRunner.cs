@@ -30,7 +30,7 @@ public static class ProcessRunner
             await process.WaitForExitAsync(timeout.Token);
             await error;
             if (process.ExitCode != 0)
-                throw new CommandException($"Команда {Path.GetFileName(file)} не выполнена (код {process.ExitCode}). Проверьте доступ, параметры и README.");
+                throw new CommandException($"Команда {Path.GetFileName(file)} не выполнена (код {process.ExitCode}): {await error}");
             return await output;
         }
         catch (System.ComponentModel.Win32Exception) { throw new CommandException($"Не удалось запустить {Path.GetFileName(file)}. Проверьте установку и PATH."); }

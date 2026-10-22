@@ -22,6 +22,6 @@ public sealed class SafeLog(AppSettings settings)
         lock (sync)
             Console.WriteLine($"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff} {(error ? "ERROR" : "INFO")} {Redact(message)}");
     }
-    // Exception messages are never logged: they may contain response bodies or connection strings.
+    // Не записываем тексты исключений: они могут содержать ответы API или строки подключения.
     public void Failure(string operation, Exception exception) => Write($"{operation}: {exception.GetType().Name}", true);
 }
